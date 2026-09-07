@@ -1,0 +1,6 @@
+{
+  "name": "AudioTales - Sách Nói & Tiểu Thuyết Audio",
+  "description": "Nền tảng đọc truyện chữ và nghe truyện audio chất lượng cao với âm thanh không gian, transcript đồng bộ và tu vi độc giả.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
