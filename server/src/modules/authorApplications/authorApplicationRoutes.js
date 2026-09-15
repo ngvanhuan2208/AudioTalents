@@ -1,0 +1,14 @@
+const express = require('express');
+const {authMiddleware} = require('../../middleware/auth');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const {roleMiddleware} = require('../../middleware/roles');
+const {ROLES} = require('../../constants/roles');
+const controller = require('./authorApplicationController');
+const router = express.Router();
+router.post('/', authMiddleware, roleMiddleware(ROLES.USER), asyncHandler(controller.submit));
+router.get('/me', authMiddleware, asyncHandler(controller.getMine));
+router.get('/admin', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.list));
+router.get('/admin/:id', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.getById));
+router.patch('/admin/:id/approve', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.approve));
+router.patch('/admin/:id/reject', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.reject));
+module.exports = router;

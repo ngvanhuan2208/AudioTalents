@@ -1,0 +1,13 @@
+const express = require('express');
+const {authMiddleware} = require('../../middleware/auth');
+const controller = require('./playlistController');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const router = express.Router();
+router.use(authMiddleware);
+router.get('/', asyncHandler(controller.list));
+router.post('/', asyncHandler(controller.create));
+router.patch('/:id', asyncHandler(controller.update));
+router.delete('/:id', asyncHandler(controller.remove));
+router.post('/:id/stories/:storyId', asyncHandler(controller.addStory));
+router.delete('/:id/stories/:storyId', asyncHandler(controller.removeStory));
+module.exports = router;

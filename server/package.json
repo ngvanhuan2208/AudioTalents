@@ -1,0 +1,36 @@
+{
+  "name": "audiotalents-server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AudioTalents API server",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "test": "node --test tests/phase2.test.js tests/phase2.5.test.js tests/phase2.6.2.test.js tests/phase2.7.test.js tests/phase3.2a.identitySchemas.test.js tests/phase3.2b.contentSchemas.test.js tests/phase3.2c.personalizationSchemas.test.js tests/phase3.2d.communitySchemas.test.js tests/phase3.2e.registryIntegrity.test.js tests/phase3.3.repositoryFoundation.test.js tests/phase3.4a.identityMongoRepositories.test.js tests/phase3.4b.identityRuntimeCutover.test.js tests/phase3.5a.contentMongoRepositories.test.js tests/phase3.5b.contentRuntimeCutover.test.js tests/phase3.6a.personalizationMongoRepositories.test.js tests/phase3.6b.personalizationRuntimeCutover.test.js tests/phase3.7a.communityMongoRepositories.test.js tests/phase3.7b.communityRuntimeCutover.test.js tests/phase3.8a.auditLogMongoRepository.test.js tests/phase3.8b.auditRuntimeCutover.test.js tests/phase4.1b.storageFoundation.test.js tests/phase4.1c1.foundation.test.js tests/phase4.1c2.uploadIntegration.test.js tests/phase4.1c3.playback.test.js tests/phase4.1d2.lifecycle.test.js tests/phase4.2a.creatorApiGap.test.js tests/phase4.2c.restoreDiscovery.test.js tests/phase4.2v2.content.test.js tests/phase4.2v21.ordering.test.js tests/phase4.2v22.taxonomy.test.js",
+    "test:integration:identity": "node --test --test-concurrency=1 tests/integration/identityPersistence.test.js",
+    "test:integration:content": "node --test --test-concurrency=1 tests/integration/contentPersistence.test.js",
+    "test:integration:personalization": "node --test --test-concurrency=1 tests/integration/personalizationPersistence.test.js",
+    "test:integration:community": "node --test --test-concurrency=1 tests/integration/communityPersistence.test.js",
+    "test:integration:audit": "node --test --test-concurrency=1 tests/integration/auditLogPersistence.test.js",
+    "test:integration:database": "node --test --test-concurrency=1 tests/integration/fullMongoRegression.test.js",
+    "test:integration:media": "node --test --test-concurrency=1 tests/integration/phase4.1d1.realMediaPipeline.test.js",
+    "test:integration:media-lifecycle": "node --test --test-concurrency=1 tests/integration/phase4.1d2.mediaLifecycle.test.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1131.0",
+    "@aws-sdk/s3-request-presigner": "^3.1131.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.9.5",
+    "music-metadata": "^11.15.0",
+    "nodemailer": "^10.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

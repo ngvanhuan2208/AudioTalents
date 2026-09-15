@@ -1,0 +1,34 @@
+const express = require('express');
+const {authMiddleware} = require('../../middleware/auth');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const {roleMiddleware} = require('../../middleware/roles');
+const {ROLES} = require('../../constants/roles');
+const controller = require('./adminController');
+const taxonomyController = require('../taxonomy/taxonomyController');
+
+const router = express.Router();
+router.use(authMiddleware, roleMiddleware(ROLES.ADMIN));
+router.get('/author-applications', asyncHandler(controller.listAuthorApplications));
+router.get('/author-applications/:id', asyncHandler(controller.getAuthorApplication));
+router.patch('/author-applications/:id/approve', asyncHandler(controller.approveAuthorApplication));
+router.patch('/author-applications/:id/reject', asyncHandler(controller.rejectAuthorApplication));
+router.get('/content/pending', asyncHandler(controller.listPendingContent));
+router.patch('/stories/:id/approve', asyncHandler(controller.approveStory));
+router.patch('/stories/:id/reject', asyncHandler(controller.rejectStory));
+router.patch('/stories/:id/revision', asyncHandler(controller.revisionStory));
+router.patch('/chapters/:id/approve', asyncHandler(controller.approveChapter));
+router.patch('/chapters/:id/reject', asyncHandler(controller.rejectChapter));
+router.patch('/chapters/:id/revision', asyncHandler(controller.revisionChapter));
+router.patch('/audio/:id/approve', asyncHandler(controller.approveAudio));
+router.patch('/audio/:id/reject', asyncHandler(controller.rejectAudio));
+router.patch('/audio/:id/revision', asyncHandler(controller.revisionAudio));
+router.get('/taxonomy-proposals', asyncHandler(taxonomyController.listProposals));
+router.get('/taxonomy-proposals/:id', asyncHandler(taxonomyController.getProposal));
+router.patch('/taxonomy-proposals/:id/approve', asyncHandler(taxonomyController.approveProposal));
+router.patch('/taxonomy-proposals/:id/reject', asyncHandler(taxonomyController.rejectProposal));
+router.post('/tags', asyncHandler(taxonomyController.createTag));
+router.get('/tags', asyncHandler(taxonomyController.listAllTags));
+router.patch('/tags/:id', asyncHandler(taxonomyController.updateTag));
+router.patch('/tags/:id/active', asyncHandler(taxonomyController.setTagActive));
+
+module.exports = router;

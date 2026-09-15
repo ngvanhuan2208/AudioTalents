@@ -1,0 +1,14 @@
+const express = require('express');
+const {authMiddleware} = require('../../middleware/auth');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const {roleMiddleware} = require('../../middleware/roles');
+const {ROLES} = require('../../constants/roles');
+const controller = require('./genreController');
+const router = express.Router();
+router.get('/', asyncHandler(controller.list));
+router.get('/admin/all', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.listAll));
+router.get('/:slug', asyncHandler(controller.getBySlug));
+router.post('/', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.create));
+router.patch('/:id', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.update));
+router.patch('/:id/active', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.setActive));
+module.exports = router;

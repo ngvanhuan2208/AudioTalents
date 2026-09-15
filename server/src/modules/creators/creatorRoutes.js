@@ -1,0 +1,13 @@
+const express = require('express');
+const {authMiddleware} = require('../../middleware/auth');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const {roleMiddleware} = require('../../middleware/roles');
+const {ROLES} = require('../../constants/roles');
+const controller = require('./creatorController');
+const router = express.Router();
+router.get('/', controller.list);
+router.get('/:slug', controller.getBySlug);
+router.post('/apply', authMiddleware, asyncHandler(controller.apply));
+router.post('/:id/follow', authMiddleware, controller.follow);
+router.delete('/:id/follow', authMiddleware, controller.follow);
+module.exports = router;

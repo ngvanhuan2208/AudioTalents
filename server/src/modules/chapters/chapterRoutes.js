@@ -1,0 +1,15 @@
+const express = require('express');
+const {authMiddleware, optionalAuth, requireAuthorOrAdmin} = require('../../middleware/auth');
+const {roleMiddleware} = require('../../middleware/roles');
+const {ROLES} = require('../../constants/roles');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const controller = require('./chapterController');
+const router = express.Router();
+router.get('/stories/:storyId/chapters', optionalAuth, asyncHandler(controller.list));
+router.post('/stories/:storyId/chapters', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.create));
+router.get('/chapters/:id', optionalAuth, asyncHandler(controller.getById));
+router.patch('/chapters/:id', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.update));
+router.delete('/chapters/:id', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.remove));
+router.post('/chapters/:id/publish', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.publish));
+router.patch('/chapters/:id/moderate', authMiddleware, roleMiddleware(ROLES.ADMIN), asyncHandler(controller.moderate));
+module.exports = router;

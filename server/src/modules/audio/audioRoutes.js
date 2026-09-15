@@ -1,0 +1,18 @@
+const express = require('express');
+const {authMiddleware, optionalAuth, requireAuthorOrAdmin} = require('../../middleware/auth');
+const {roleMiddleware} = require('../../middleware/roles');
+const {ROLES} = require('../../constants/roles');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const controller = require('./audioController');
+const router = express.Router();
+router.get('/:id/playback', optionalAuth, asyncHandler(controller.playback));
+router.post('/:id/playback-capability', authMiddleware, asyncHandler(controller.playbackCapability));
+router.get('/', authMiddleware, asyncHandler(controller.list));
+router.post('/', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.create));
+router.patch('/:id', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.update));
+router.delete('/:id', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.remove));
+router.post('/:id/restore', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.restore));
+router.post('/:id/submit', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), requireAuthorOrAdmin, asyncHandler(controller.submit));
+router.post('/:id/upload-url', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), asyncHandler(controller.authorizeUpload));
+router.post('/:id/upload-confirm', authMiddleware, roleMiddleware(ROLES.USER, ROLES.ADMIN), asyncHandler(controller.confirmUpload));
+module.exports = router;

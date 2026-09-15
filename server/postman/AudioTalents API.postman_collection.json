@@ -1,0 +1,86 @@
+{
+  "info": {
+    "name": "AudioTalents API",
+    "description": "Phase 2 Postman collection for backend auth, content, ownership and moderation flows.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:5000/api"},
+    {"key": "userToken", "value": ""},
+    {"key": "refreshToken", "value": ""},
+    {"key": "otp", "value": ""},
+    {"key": "authorToken", "value": ""},
+    {"key": "adminToken", "value": ""},
+    {"key": "storyId", "value": ""},
+    {"key": "chapterId", "value": ""},
+    {"key": "audioId", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {"name": "Register", "event": [{"listen": "test", "script": {"exec": ["pm.test('Created unverified user', () => { const json = pm.response.json(); pm.expect(pm.response.code).to.eql(201); pm.expect(json.data.user.role).to.eql('USER'); pm.expect(json.data.user.emailVerified).to.eql(false); pm.expect(json.data.otp).to.be.undefined; pm.expect(JSON.stringify(json)).to.not.include('passwordHash'); });"], "type": "text/javascript"}}], "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"username\": \"user_one\",\n  \"email\": \"user_one@test.com\",\n  \"password\": \"password123\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"]}}},
+        {"name": "Verify Email", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user_one@test.com\",\n  \"otp\": \"{{otp}}\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/verify-email", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"]}}},
+        {"name": "Resend OTP", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user_one@test.com\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/resend-verification", "host": ["{{baseUrl}}"], "path": ["auth", "resend-verification"]}}},
+        {"name": "Login", "event": [{"listen": "test", "script": {"exec": ["const json = pm.response.json(); if (pm.response.code === 200) { pm.collectionVariables.set('userToken', json.data.accessToken); pm.collectionVariables.set('refreshToken', json.data.refreshToken); } pm.test('OTP is not returned', () => { pm.expect(json.data && json.data.otp).to.be.undefined; });"], "type": "text/javascript"}}], "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user_one@test.com\",\n  \"password\": \"password123\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}}},
+        {"name": "Me", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"]}}},
+        {"name": "Refresh", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"]}}},
+        {"name": "Forgot Password", "event": [{"listen": "test", "script": {"exec": ["pm.test('Does not enumerate emails', () => { const json = pm.response.json(); pm.expect(pm.response.code).to.eql(200); pm.expect(json.data.sent).to.eql(true); pm.expect(json.data.otp).to.be.undefined; });"], "type": "text/javascript"}}], "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user_one@test.com\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"]}}},
+        {"name": "Reset Password", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user_one@test.com\",\n  \"otp\": \"{{otp}}\",\n  \"password\": \"newpassword123\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"]}}},
+        {"name": "Logout", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"]}}},
+        {"name": "Login Unverified", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"unverified@test.com\",\n  \"password\": \"password123\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"]}}},
+        {"name": "Wrong OTP", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"user_one@test.com\",\n  \"otp\": \"000000\"\n}"}, "url": {"raw": "{{baseUrl}}/auth/verify-email", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"]}}}
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {"name": "Get Me", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"]}}},
+        {"name": "Update Me", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"username\": \"user_one_updated\",\n  \"bio\": \"Updated profile\"\n}"}, "url": {"raw": "{{baseUrl}}/users/me", "host": ["{{baseUrl}}"], "path": ["users", "me"]}}}
+      ]
+    },
+    {
+      "name": "Author Application",
+      "item": [
+        {"name": "Submit Application", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"displayName\": \"User One\",\n  \"bio\": \"Writer and narrator\",\n  \"copyrightAgreement\": true\n}"}, "url": {"raw": "{{baseUrl}}/author-applications", "host": ["{{baseUrl}}"], "path": ["author-applications"]}}},
+        {"name": "Get My Application", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/author-applications/me", "host": ["{{baseUrl}}"], "path": ["author-applications", "me"]}}}
+      ]
+    },
+    {
+      "name": "Author",
+      "item": [
+        {"name": "List My Stories", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{authorToken}}"}], "url": {"raw": "{{baseUrl}}/author/stories", "host": ["{{baseUrl}}"], "path": ["author", "stories"]}}},
+        {"name": "Create Story", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{authorToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"The First Story\",\n  \"description\": \"An example story for testing\",\n  \"genres\": [\"Fantasy\"],\n  \"tags\": [\"story\"]\n}"}, "url": {"raw": "{{baseUrl}}/author/stories", "host": ["{{baseUrl}}"], "path": ["author", "stories"]}}},
+        {"name": "Submit Story", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{authorToken}}"}], "url": {"raw": "{{baseUrl}}/author/stories/{{storyId}}/submit", "host": ["{{baseUrl}}"], "path": ["author", "stories", "{{storyId}}", "submit"]}}},
+        {"name": "Create Chapter", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{authorToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"chapterNumber\": 1,\n  \"title\": \"Chapter One\",\n  \"content\": \"Hello world\"\n}"}, "url": {"raw": "{{baseUrl}}/author/stories/{{storyId}}/chapters", "host": ["{{baseUrl}}"], "path": ["author", "stories", "{{storyId}}", "chapters"]}}}
+      ]
+    },
+    {
+      "name": "Library",
+      "item": [
+        {"name": "List Library", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/library", "host": ["{{baseUrl}}"], "path": ["library"]}}},
+        {"name": "Save Story to Library", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/library/{{storyId}}", "host": ["{{baseUrl}}"], "path": ["library", "{{storyId}}"]}}}
+      ]
+    },
+    {
+      "name": "Search",
+      "item": [
+        {"name": "Search Stories", "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/search?keyword=Fantasy", "host": ["{{baseUrl}}"], "path": ["search"], "query": [{"key": "keyword", "value": "Fantasy"}]}}}
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {"name": "List Notifications", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/notifications", "host": ["{{baseUrl}}"], "path": ["notifications"]}}},
+        {"name": "Mark All Read", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{userToken}}"}], "url": {"raw": "{{baseUrl}}/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["notifications", "read-all"]}}}
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {"name": "List Author Applications", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}], "url": {"raw": "{{baseUrl}}/admin/author-applications", "host": ["{{baseUrl}}"], "path": ["admin", "author-applications"]}}},
+        {"name": "Approve Story", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{adminToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"status\": \"APPROVED\"\n}"}, "url": {"raw": "{{baseUrl}}/admin/stories/{{storyId}}/approve", "host": ["{{baseUrl}}"], "path": ["admin", "stories", "{{storyId}}", "approve"]}}}
+      ]
+    }
+  ]
+}

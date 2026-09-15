@@ -1,0 +1,12 @@
+const express = require('express');
+const {authMiddleware} = require('../../middleware/auth');
+const {asyncHandler} = require('../../middleware/asyncHandler');
+const controller = require('./communityController');
+const router = express.Router();
+router.get('/stories/:id/comments', asyncHandler(controller.comments));
+router.post('/stories/:id/comments', authMiddleware, asyncHandler(controller.addComment));
+router.delete('/comments/:id', authMiddleware, asyncHandler(controller.removeComment));
+router.post('/stories/:id/rating', authMiddleware, asyncHandler(controller.rate));
+router.get('/stories/:id/rating', asyncHandler(controller.ratings));
+router.post('/chapters/:id/reports', authMiddleware, asyncHandler(controller.report));
+module.exports = router;
