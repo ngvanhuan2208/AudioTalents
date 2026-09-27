@@ -1,5 +1,5 @@
-import { apiFetch } from './api';
-import { Chapter, Comment, Genre, Playlist, Story, UserPlayHistory } from '../types';
+import { apiFetch, buildApiUrl, resolvePlaybackUrl } from './api';
+import { Chapter, Comment, Genre, PlaybackAudioPart, Playlist, Story, UserPlayHistory } from '../types';
 
 interface RawStory {
   id: string;
@@ -59,7 +59,24 @@ interface RawGenre {
 }
 
 interface RawAudio {
+  id?: string;
+  partNumber?: number;
+  durationSec?: number;
   audioUrl?: string;
+}
+
+export function orderedPlayableParts(audio: RawAudio[], apiBaseUrl = buildApiUrl('/')): PlaybackAudioPart[] {
+  return audio.flatMap((item, serverOrder) => {
+    const audioUrl = item.audioUrl && resolvePlaybackUrl(item.audioUrl, apiBaseUrl);
+    if (!audioUrl) return [];
+    const partNumber = Number.isInteger(item.partNumber) && Number(item.partNumber) > 0 ? item.partNumber : undefined;
+    return [{id: item.id, partNumber, durationSec: item.durationSec, audioUrl, serverOrder}];
+  }).sort((a, b) => {
+    if (a.partNumber !== undefined && b.partNumber !== undefined) return a.partNumber - b.partNumber;
+    if (a.partNumber !== undefined) return -1;
+    if (b.partNumber !== undefined) return 1;
+    return a.serverOrder - b.serverOrder;
+  }).map(({serverOrder: _serverOrder, ...part}) => part);
 }
 
 function formatCount(value: number | string | undefined): string {
@@ -153,8 +170,9 @@ export async function getStoryChapters(storyId: string): Promise<Chapter[]> {
   const raw = await apiFetch<RawChapter[]>(`/stories/${encodeURIComponent(storyId)}/chapters`);
   return Promise.all(raw.map(async chapter => {
     const mapped = mapChapter(chapter);
-    const audio = await getPublicAudio(chapter.id);
-    return {...mapped, audioUrl: mapped.audioUrl || audio[0]?.audioUrl};
+    // Only the public Audio endpoint can authorize a playable source.
+    const audioParts = orderedPlayableParts(await getPublicAudio(chapter.id));
+    return {...mapped, audioParts, audioUrl: audioParts[0]?.audioUrl};
   }));
 }
 

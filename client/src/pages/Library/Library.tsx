@@ -160,7 +160,7 @@ export const Library: React.FC<LibraryViewProps> = ({ onOpenStoryDetail }) => {
 
                   <div className="flex items-center gap-2 self-end sm:self-center">
                     <button
-                      onClick={() => playStory(matchedStory, item.chapterIndex, item.positionSec)}
+                      onClick={() => playStory(matchedStory, item.chapterIndex > 0 ? item.chapterIndex : undefined, item.positionSec)}
                       className="px-4 py-2 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center gap-1.5 shadow-md hover:brightness-110 active:scale-95 transition-all"
                     >
                       <span className="material-symbols-outlined text-base">play_arrow</span>

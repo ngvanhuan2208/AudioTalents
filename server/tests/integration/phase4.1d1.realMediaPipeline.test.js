@@ -13,12 +13,13 @@ const {
 const d1 = loadPhase41d1Environment();
 const app = require('../../app');
 const {connectDatabase, disconnectDatabase, getDatabaseStatus} = require('../../src/config/database');
-const {User, Story, Chapter, Audio} = require('../../src/models');
+const {User, Genre, Story, Chapter, Audio} = require('../../src/models');
 const {getStorageProvider} = require('../../src/media/storage');
 const {DefaultMediaInspector} = require('../../src/media/inspection');
 const {UploadGrantService} = require('../../src/media/upload');
 const {signAccessToken} = require('../../src/utils/jwt');
 const {ROLES, AUTHOR_STATUS, ACCOUNT_STATUS} = require('../../src/constants/roles');
+const genreService = require('../../src/modules/genres/genreService');
 const storyService = require('../../src/modules/stories/storyService');
 const chapterService = require('../../src/modules/chapters/chapterService');
 const audioService = require('../../src/modules/audio/audioService');
@@ -102,7 +103,7 @@ test('Phase 4.1D1 runs the real MongoDB + MinIO WAV upload and playback pipeline
     assertConnectedTestDatabase();
     await User.db.dropDatabase();
 
-    await Promise.all([User.init(), Story.init(), Chapter.init(), Audio.init()]);
+    await Promise.all([User.init(), Genre.init(), Story.init(), Chapter.init(), Audio.init()]);
 
     const suffix = Date.now().toString(36);
     const creatorDocument = await User.create({
@@ -120,12 +121,14 @@ test('Phase 4.1D1 runs the real MongoDB + MinIO WAV upload and playback pipeline
       accountStatus: ACCOUNT_STATUS.ACTIVE, emailVerified: true, tokenVersion: 0,
     };
     const admin = {id: creator.id, role: ROLES.ADMIN, authorStatus: AUTHOR_STATUS.NONE};
-    const story = await Story.create({
-      creatorId: creator.id, title: 'Phase 4.1D1 disposable story', slug: `phase-41d1-${suffix}`,
-      description: 'Disposable real media integration fixture', status: 'ONGOING', reviewStatus: 'DRAFT', visibility: 'PRIVATE',
-    });
+    const genre = await genreService.create({name: 'Phase 4.1D1 Genre', slug: 'phase-41d1-genre'});
+    const story = await storyService.create({
+      title: 'Phase 4.1D1 disposable story', description: 'Disposable real media integration fixture',
+      genres: [genre.slug],
+    }, creator);
+    assert.deepEqual((await Story.findById(story.id).lean().exec()).genreIds.map(String), [genre.id]);
     const chapter = await Chapter.create({
-      storyId: story._id, creatorId: creator.id, chapterNumber: 1, title: 'Disposable chapter',
+      storyId: story.id, creatorId: creator.id, chapterNumber: 1, title: 'Disposable chapter',
       slug: `1-phase-41d1-${suffix}`, status: 'DRAFT',
     });
     const createdAudio = await audioService.create({chapterId: String(chapter._id), title: 'Real WAV integration audio'}, creator);
@@ -203,7 +206,7 @@ test('Phase 4.1D1 runs the real MongoDB + MinIO WAV upload and playback pipeline
     assert.equal(retry.body.data.storageKey, token.finalKey);
     assert.equal(await Audio.countDocuments({_id: createdAudio.id}), 1);
 
-    await storyService.moderate(String(story._id), 'APPROVED', admin);
+    await storyService.moderate(story.id, 'APPROVED', admin);
     await chapterService.moderate(String(chapter._id), 'APPROVED', admin);
     await audioService.moderate(createdAudio.id, 'APPROVED', admin);
     assert.equal((await Audio.findById(createdAudio.id).lean().exec()).isPrimary, false);

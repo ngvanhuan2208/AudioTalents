@@ -12,8 +12,16 @@ export interface Chapter {
   publishedAt: string;
   narrator?: string;
   audioUrl?: string;
+  audioParts?: PlaybackAudioPart[];
   content: string;
   transcript: TranscriptSegment[];
+}
+
+export interface PlaybackAudioPart {
+  id?: string;
+  partNumber?: number;
+  audioUrl: string;
+  durationSec?: number;
 }
 
 export interface TranscriptSegment {

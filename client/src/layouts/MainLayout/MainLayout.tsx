@@ -25,7 +25,7 @@ import { IconButton } from '../../components/ui/IconButton';
 
 function MainLayout({onNavigate}: {onNavigate: (path: string) => void}) {
   const { currentStory, currentChapter } = useAudio();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, loadUser } = useAuth();
 
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
@@ -261,7 +261,10 @@ function MainLayout({onNavigate}: {onNavigate: (path: string) => void}) {
       <AuthorApplicationModal
         isOpen={isAuthorApplicationOpen}
         onClose={() => setIsAuthorApplicationOpen(false)}
-        onSubmitted={triggerToast}
+        onSubmitted={async message => {
+          await loadUser();
+          triggerToast(message);
+        }}
       />
     </div>
   );

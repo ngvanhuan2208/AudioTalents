@@ -27,8 +27,6 @@ export const ExpandedPlayerModal: React.FC<ExpandedPlayerModalProps> = ({ onOpen
     setIsExpanded,
   } = useAudio();
 
-  if (!currentStory || !currentChapter) return null;
-
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
 
   const formatTime = (secs: number) => {
@@ -47,6 +45,7 @@ export const ExpandedPlayerModal: React.FC<ExpandedPlayerModalProps> = ({ onOpen
     }
   }, [activeSegmentIndex]);
 
+  if (!currentStory || !currentChapter) return null;
   if (!isExpanded) return null;
 
   return (

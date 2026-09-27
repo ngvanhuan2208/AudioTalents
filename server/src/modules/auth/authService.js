@@ -46,12 +46,14 @@ async function register({username, email, password}) {
 }
 
 async function login({email, password}) {
-  const user = await getIdentityRepositories().user.findForAuthenticationByEmail(normalizeEmail(email));
+  const repositories = getIdentityRepositories();
+  const user = await repositories.user.findForAuthenticationByEmail(normalizeEmail(email));
   if (!user || !(await bcrypt.compare(password, user.passwordHash))) throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
   if (user.accountStatus === ACCOUNT_STATUS.SUSPENDED) throw new AppError('Account is suspended', 403, 'ACCOUNT_SUSPENDED');
   if (user.accountStatus !== ACCOUNT_STATUS.ACTIVE) throw new AppError('Account is deactivated', 403, 'ACCOUNT_DEACTIVATED');
   if (!user.emailVerified) throw new AppError('Email verification is required', 403, 'EMAIL_NOT_VERIFIED');
-  return issueTokens(user);
+  const updated = await repositories.user.setLastLoginAt(user.id);
+  return issueTokens(updated || user);
 }
 
 function issueTokens(user) {

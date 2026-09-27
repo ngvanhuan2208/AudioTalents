@@ -56,6 +56,14 @@ test('registration creates a normal unverified active user without privilege esc
   assertNoSecrets(result);
 });
 
+test('registration trims and lowercases email before persistence', async () => {
+  reset();
+  captureEmail();
+  const result = await authService.register({username: 'Normalized', email: '  Normalized@Test.COM  ', password: 'password123'});
+  assert.equal(result.user.email, 'normalized@test.com');
+  assert.equal(userRepository.findByEmail('normalized@test.com').email, 'normalized@test.com');
+});
+
 test('re-registering an unverified email reuses the pending account and preserves OTP cooldown', async () => {
   reset();
   const getMessage = captureEmail();
@@ -131,6 +139,7 @@ test('unverified login is blocked and verified active login returns tokens', asy
   const result = await authService.login({email: 'login@test.com', password: 'password123'});
   assert.ok(result.accessToken);
   assert.ok(result.refreshToken);
+  assert.ok(userRepository.findByEmail('login@test.com').lastLoginAt);
   assertNoSecrets(result.user);
 });
 
@@ -216,6 +225,37 @@ test('auth HTTP responses never include OTP, password, or mail secrets', async (
     assert.equal(loginBody.error.code, 'EMAIL_NOT_VERIFIED');
     assert.equal(loginBody.data, undefined);
     assert.equal(loginBody.otp, undefined);
+
+    const publicProfileResponse = await fetch(`http://127.0.0.1:${port}/api/users/${registerBody.data.user.id}`);
+    const publicProfileBody = await publicProfileResponse.json();
+    assert.equal(publicProfileResponse.status, 200);
+    for (const field of ['email', 'emailVerified', 'accountStatus', 'lastLoginAt', 'tokenVersion', 'passwordHash']) {
+      assert.equal(publicProfileBody.data[field], undefined);
+    }
+  } finally {
+    await new Promise(resolve => server.close(resolve));
+    emailService.clearTestDelivery();
+  }
+});
+
+test('unexpected SMTP failures are rolled back and do not leak internal messages over HTTP', async () => {
+  reset();
+  emailService.setTestDelivery(async () => { throw new Error('SMTP_INTERNAL_DIAGNOSTIC'); });
+  const server = http.createServer(app);
+  await new Promise(resolve => server.listen(0, resolve));
+  const {port} = server.address();
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/auth/register`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: 'Failure', email: 'failure@test.com', password: 'password123'}),
+    });
+    const body = await response.json();
+    assert.equal(response.status, 500);
+    assert.equal(body.error.code, 'INTERNAL_SERVER_ERROR');
+    assert.equal(body.error.message, 'Internal server error');
+    assert.doesNotMatch(JSON.stringify(body), /SMTP_INTERNAL_DIAGNOSTIC/);
+    assert.equal(userRepository.findByEmail('failure@test.com'), null);
+    assert.equal(otpService.otpTokenRepository.items.length, 0);
   } finally {
     await new Promise(resolve => server.close(resolve));
     emailService.clearTestDelivery();

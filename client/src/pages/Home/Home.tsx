@@ -123,17 +123,14 @@ export const Home: React.FC<HomeViewProps> = ({
                 </button>
 
                 <button
-                  onClick={() => playStory(heroStory, 128)}
+                  onClick={() => playStory(heroStory)}
                   className="px-6 py-3 rounded-full bg-[#262a33] hover:bg-[#353942] text-[#dfe2ee] text-sm font-semibold transition-all flex items-center gap-2 border border-white/10 group"
                   type="button"
                 >
                   <span className="material-symbols-outlined text-tertiary group-hover:scale-110 transition-transform">
                     play_circle
                   </span>
-                  <span>Nghe ngay - Tập mới</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#31353e] text-tertiary font-bold">
-                    VIP
-                  </span>
+                  <span>Nghe ngay</span>
                 </button>
               </div>
 
@@ -186,7 +183,6 @@ export const Home: React.FC<HomeViewProps> = ({
                     <span className="w-1 h-6 bg-secondary rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
                     <span className="w-1 h-4 bg-tertiary rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
                     <span className="w-1 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: '450ms' }} />
-                    <span className="text-[10px] text-[#dfe2ee] font-mono ml-1">HQ 320k</span>
                   </div>
                 </div>
 
@@ -227,9 +223,6 @@ export const Home: React.FC<HomeViewProps> = ({
                     <span className="flex items-center gap-1">
                       <span className="material-symbols-outlined text-sm">auto_stories</span> {heroStory.chaptersCount} chương
                     </span>
-                    <span className="flex items-center gap-1 text-tertiary">
-                      <span className="material-symbols-outlined text-sm">bolt</span> Đang ra C.851
-                    </span>
                   </div>
 
                   {/* Quick action banner inside hero card */}
@@ -240,13 +233,13 @@ export const Home: React.FC<HomeViewProps> = ({
                       </div>
                       <div className="min-w-0 text-left">
                         <p className="text-xs text-[#dfe2ee] font-semibold truncate">
-                          Chương 128: Kiếm Phá Vạn Pháp
+                          {heroStory.title}
                         </p>
-                        <p className="text-[10px] text-[#908fa0]">Nghe thử miễn phí 15 phút</p>
+                        <p className="text-[10px] text-[#908fa0]">Phát tập Audio đầu tiên khả dụng</p>
                       </div>
                     </div>
                     <button
-                      onClick={() => playStory(heroStory, 128)}
+                      onClick={() => playStory(heroStory)}
                       className="px-3 py-1.5 rounded-full bg-primary text-on-primary text-xs font-bold hover:brightness-110 flex-shrink-0 shadow-sm transition-transform active:scale-95"
                       type="button"
                     >

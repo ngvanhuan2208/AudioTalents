@@ -19,7 +19,7 @@ export const StoryDetail: React.FC<StoryDetailViewProps> = ({
   onOpenGift,
   onOpenReport
 }) => {
-  const { playStory, currentStory, currentChapter, isPlaying } = useAudio();
+  const { playStory, togglePlay, currentStory, currentChapter, isPlaying } = useAudio();
   const { isAuthenticated } = useAuth();
   const [story, setStory] = useState<Story | null>(null);
   const [activeTab, setActiveTab] = useState<'chapters' | 'about' | 'comments'>('chapters');
@@ -195,11 +195,11 @@ export const StoryDetail: React.FC<StoryDetailViewProps> = ({
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-3">
               <button
-                onClick={() => playStory(story, 1)}
+                onClick={() => playStory(story)}
                 className="px-6 py-2.5 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all"
               >
                 <span className="material-symbols-outlined text-lg">play_arrow</span>
-                Nghe từ đầu (C.1)
+                Nghe từ đầu
               </button>
 
               <button
@@ -349,7 +349,7 @@ export const StoryDetail: React.FC<StoryDetailViewProps> = ({
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <button
-                      onClick={() => playStory(story, chapter.index)}
+                      onClick={() => isCurrent ? togglePlay() : playStory(story, chapter.index)}
                       className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
                         isCurrent && isPlaying
                           ? 'bg-primary text-on-primary'

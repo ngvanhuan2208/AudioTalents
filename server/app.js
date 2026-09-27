@@ -1,11 +1,12 @@
 const cors = require('cors');
 const express = require('express');
 const apiRoutes = require('./src/routes');
+const {env} = require('./src/config/env');
 const {apiLimiter} = require('./src/middleware/rateLimit');
 const {notFound, errorHandler} = require('./src/middleware/errorHandler');
 
 const app = express();
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+const clientUrl = env.clientUrl;
 
 app.disable('x-powered-by');
 app.use(cors({origin: clientUrl}));

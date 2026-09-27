@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { creatorService, mediaErrorMessage, type CreatorAudio } from '../../services/creatorService';
+import {audioService, mediaErrorMessage, type AudioAsset} from '../../services/audioService';
 
 type Notice = { tone: 'success' | 'error'; text: string } | null;
 
 interface CreatorPreviewPlayerProps {
-  audio: CreatorAudio;
+  audio: AudioAsset;
   onNotice: (notice: Notice) => void;
 }
 
@@ -43,7 +43,7 @@ export function CreatorPreviewPlayer({audio, onNotice}: CreatorPreviewPlayerProp
     if (requesting) return;
     setRequesting(true);
     try {
-      const capability = await creatorService.requestPlaybackCapability(audio.id);
+      const capability = await audioService.requestPlaybackCapability(audio.id);
       // This URL is intentionally only held by this mounted component. It is
       // never copied to persistent storage, logging, routing, or a toast.
       setSourceUrl(capability.playbackUrl);

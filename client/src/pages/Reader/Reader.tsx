@@ -21,10 +21,6 @@ export const Reader: React.FC<ReaderViewProps> = ({ onBack, onOpenAudioModal }) 
     seek,
   } = useAudio();
 
-  if (!currentStory || !currentChapter) {
-    return <div className="min-h-screen flex items-center justify-center text-sm text-[#908fa0]">Chưa có chương để đọc.</div>;
-  }
-
   const [settings, setSettings] = useState<ReaderSettings>(readerSettingsService.get());
   const [showSettingsPanel, setShowSettingsPanel] = useState<boolean>(false);
   const readerContentRef = useRef<HTMLDivElement>(null);
@@ -57,7 +53,7 @@ export const Reader: React.FC<ReaderViewProps> = ({ onBack, onOpenAudioModal }) 
   };
 
   // Find active transcript index for sync highlight
-  const activeSegmentIndex = currentChapter.transcript?.findIndex(
+  const activeSegmentIndex = currentChapter?.transcript?.findIndex(
     seg => currentTime >= seg.startSec && currentTime <= seg.endSec
   ) ?? -1;
 
@@ -70,6 +66,10 @@ export const Reader: React.FC<ReaderViewProps> = ({ onBack, onOpenAudioModal }) 
       }
     }
   }, [activeSegmentIndex]);
+
+  if (!currentStory || !currentChapter) {
+    return <div className="min-h-screen flex items-center justify-center text-sm text-[#908fa0]">Chưa có chương để đọc.</div>;
+  }
 
   return (
     <div className={`min-h-screen w-full transition-colors duration-300 ${getThemeClass()} pb-24`}>

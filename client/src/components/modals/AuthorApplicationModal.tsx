@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { authStorage } from '../../services/api';
+import { authStorage, buildApiUrl } from '../../services/api';
 import { IconButton } from '../ui/IconButton';
 
 interface AuthorApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitted: (message: string) => void;
+  onSubmitted: (message: string) => void | Promise<void>;
 }
 
 export const AuthorApplicationModal: React.FC<AuthorApplicationModalProps> = ({ isOpen, onClose, onSubmitted }) => {
@@ -27,15 +27,14 @@ export const AuthorApplicationModal: React.FC<AuthorApplicationModalProps> = ({ 
     }
     setIsSubmitting(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/author-applications`, {
+      const response = await fetch(buildApiUrl('/author-applications'), {
         method: 'POST',
         headers: {'Content-Type': 'application/json', Authorization: `Bearer ${token}`},
         body: JSON.stringify({displayName, bio, copyrightAgreement}),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Không thể gửi đơn đăng ký.');
-      onSubmitted('Đơn đăng ký quyền tác giả đã được gửi và đang chờ xét duyệt.');
+      await onSubmitted('Đơn đăng ký quyền tác giả đã được gửi và đang chờ xét duyệt.');
       onClose();
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'Không thể gửi đơn đăng ký.');

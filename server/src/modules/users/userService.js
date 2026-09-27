@@ -32,4 +32,11 @@ async function getById(id) {
   return publicUser(user);
 }
 
-module.exports = {updateMe, getById};
+async function getPublicById(id) {
+  const user = await getIdentityRepositories().user.findById(id);
+  if (!user) throw new AppError('User not found', 404, 'NOT_FOUND');
+  const {username, role, authorStatus, profile, createdAt} = user;
+  return {id: user.id, username, role, authorStatus, profile, createdAt};
+}
+
+module.exports = {updateMe, getById, getPublicById};

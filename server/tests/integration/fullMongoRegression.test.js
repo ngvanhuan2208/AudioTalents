@@ -137,6 +137,8 @@ test('full canonical Mongo regression uses all runtime providers and one disposa
     await new Promise(resolve => apiServer.listen(0, resolve));
     const port = apiServer.address().port;
     const adminHeaders = {'Content-Type': 'application/json', authorization: `Bearer ${adminToken}`};
+    // Moderation may approve Audio only after its media processing is READY.
+    await content.audio.updateProcessing(audio.id, 'READY');
     for (const [path, body] of [
       [`/api/admin/author-applications/${application.id}/approve`, {}],
       [`/api/admin/stories/${story.id}/approve`, {actorId: owner.id}],
@@ -146,7 +148,6 @@ test('full canonical Mongo regression uses all runtime providers and one disposa
       const response = await request(port, path, {method: 'PATCH', headers: adminHeaders, body: JSON.stringify(body)});
       assert.equal(response.status, 200, path);
     }
-    await content.audio.updateProcessing(audio.id, 'READY');
     await audioService.setPrimaryAudio(chapter.id, audio.id, owner);
     assert.equal((await audioService.getDefaultPlayback(chapter.id)).id, audio.id);
     storedStory = await models.Story.findById(story.id).lean().exec();

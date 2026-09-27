@@ -64,21 +64,28 @@ test('production identity wiring resolves Mongo repositories without a database 
 });
 
 test('login uses only the authentication-specific identity lookup and keeps passwordHash internal', async () => {
-  const calls = [];
+  const lookups = [];
+  const loginAudits = [];
   const passwordHash = await bcrypt.hash('password123', 4);
+  const authenticated = {id: 'user-1', username: 'User', email: 'user@example.com', passwordHash, role: ROLES.USER, authorStatus: AUTHOR_STATUS.NONE, accountStatus: ACCOUNT_STATUS.ACTIVE, emailVerified: true, tokenVersion: 0, profile: {bio: '', avatar: null}};
   configureIdentityRepositoriesForTests(emptyProvider({
     user: {
       async findByEmail() { throw new Error('generic lookup must not authenticate'); },
       async findForAuthenticationByEmail(email) {
-        calls.push(email);
-        return {id: 'user-1', username: 'User', email, passwordHash, role: ROLES.USER, authorStatus: AUTHOR_STATUS.NONE, accountStatus: ACCOUNT_STATUS.ACTIVE, emailVerified: true, tokenVersion: 0, profile: {bio: '', avatar: null}};
+        lookups.push(email);
+        return {...authenticated, email};
       },
+      async setLastLoginAt(id, lastLoginAt = new Date()) { loginAudits.push({id, lastLoginAt}); return {...authenticated, lastLoginAt}; },
     },
   }));
 
   const result = await authService.login({email: ' USER@EXAMPLE.COM ', password: 'password123'});
-  assert.deepEqual(calls, ['user@example.com']);
+  assert.deepEqual(lookups, ['user@example.com']);
+  assert.equal(loginAudits.length, 1);
+  assert.equal(loginAudits[0].id, 'user-1');
+  assert.ok(loginAudits[0].lastLoginAt instanceof Date);
   assert.equal(result.user.passwordHash, undefined);
+  assert.ok(result.user.lastLoginAt);
   assert.ok(result.accessToken);
 });
 

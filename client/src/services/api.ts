@@ -36,6 +36,21 @@ export function buildApiUrl(path: string) {
   return `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
+// Public media paths are root-relative to the API host, not the Vite host.
+// Absolute provider URLs (including signed URLs) must be left untouched.
+export function resolvePlaybackUrl(value: string, apiBaseUrl = buildApiUrl('/')): string | null {
+  const path = value.trim();
+  if (/^https?:\/\//i.test(path)) return path;
+  if (!path || path.startsWith('//') || /^[a-z][a-z\d+.-]*:/i.test(path)) return null;
+  try {
+    const base = new URL(apiBaseUrl);
+    if (!/^https?:$/.test(base.protocol)) return null;
+    return new URL(path, base).toString();
+  } catch {
+    return null;
+  }
+}
+
 async function parseApiResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get('content-type') || '';
   const rawBody = await response.text();
